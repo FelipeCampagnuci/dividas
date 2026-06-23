@@ -3,9 +3,9 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  // Servido em http://10.100.12.23/dividas/ pelo Nginx (location /dividas/).
-  // O base precisa bater com o subpath pra os assets carregarem certo.
-  base: "/dividas/",
+  // Servido na raiz de uma porta dedicada (pm2 -> node server.mjs na :3200),
+  // então base "/" — igual ao meet-monitor que roda na :3100.
+  base: "/",
   server: {
     host: true,
     port: 5173,

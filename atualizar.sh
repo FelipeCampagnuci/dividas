@@ -1,11 +1,10 @@
 #!/bin/bash
-# Atualiza o dividas na VM (estilo do atualizar.sh do meet-monitor).
-# git pull -> build (Vite) -> publica dist/ no diretório do Nginx.
+# Atualiza o dividas na VM (igual ao atualizar.sh do meet-monitor).
+# git pull -> npm install -> build -> (re)start no PM2 na porta 3200.
 # Caminho fixo do projeto; pra usar outro:  DIVIDAS_DIR=/caminho ./atualizar.sh
 set -euo pipefail
 
 PROJ_DIR="${DIVIDAS_DIR:-$HOME/dividas}"
-WEB_DIR="${DIVIDAS_WEB_DIR:-/var/www/dividas}"
 
 echo "--- Iniciando atualização do projeto Dividas ---"
 
@@ -25,13 +24,13 @@ npm install --include=dev
 echo "Buildando..."
 npm run build
 
-echo "Publicando em $WEB_DIR ..."
-sudo mkdir -p "$WEB_DIR"
-sudo rm -rf "${WEB_DIR:?}/"*
-sudo cp -r dist/* "$WEB_DIR"/
-sudo chown -R www-data:www-data "$WEB_DIR"
+echo "(Re)iniciando no pm2..."
+if pm2 describe dividas > /dev/null 2>&1; then
+  pm2 restart dividas --update-env
+else
+  pm2 start npm --name dividas -- start
+fi
+pm2 save
 
-echo "Recarregando Nginx..."
-sudo nginx -t && sudo systemctl reload nginx
-
-echo "--- Dividas atualizado e no ar em http://10.100.12.23/dividas ---"
+echo "--- Dividas atualizado e no ar (porta 3200) ---"
+pm2 status dividas || true
