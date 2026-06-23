@@ -52,20 +52,19 @@ export default function App() {
   const [alertas, setAlertas] = useState([]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const r = await window.storage.get(STORAGE_KEY);
-        if (r?.value) setDividas(JSON.parse(r.value));
-      } catch {}
-      setLoaded(true);
-    };
-    load();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setDividas(JSON.parse(raw));
+    } catch {}
+    setLoaded(true);
     if ("Notification" in window) setNotifPerm(Notification.permission);
   }, []);
 
   useEffect(() => {
     if (!loaded) return;
-    window.storage.set(STORAGE_KEY, JSON.stringify(dividas)).catch(() => {});
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dividas));
+    } catch {}
   }, [dividas, loaded]);
 
   useEffect(() => {
